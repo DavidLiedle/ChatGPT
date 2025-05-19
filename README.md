@@ -4,6 +4,7 @@ This repository contains multiple implementations that interact with the OpenAI 
 
 - `NetBeans/` – NetBeans plugin (v2.0) providing a GUI for ChatGPT.
 - `go-cli/` – A command line interface written in Go.
+- `flutter-gui/` – A minimal Flutter application providing a GUI interface.
 - `dart-cli/` – A command line interface written in Dart.
 - `rust-cli/` – A command line interface written in Rust.
 
