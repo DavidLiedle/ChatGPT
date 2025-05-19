@@ -1,0 +1,8 @@
+name: dart_cli
+description: A simple Dart command line tool interacting with the OpenAI API.
+version: 0.1.0
+environment:
+  sdk: '>=2.17.0 <3.0.0'
+dependencies:
+  args: ^2.4.0
+  http: ^0.13.0
