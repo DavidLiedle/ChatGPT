@@ -8,4 +8,4 @@ This repository contains multiple implementations that interact with the OpenAI 
 - `dart-cli/` – A command line interface written in Dart.
 - `rust-cli/` – A command line interface written in Rust.
 
-Each subfolder may provide additional documentation.
+All CLI implementations share the same workflow: start an interactive `chat` session, inspect `history`, or `clear` the stored conversation. Each subfolder may provide additional documentation.
