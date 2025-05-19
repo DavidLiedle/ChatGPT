@@ -7,6 +7,8 @@ import okhttp3.Response;
 import okhttp3.MediaType;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import java.util.ArrayList;
+import java.util.List;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.File;
@@ -52,10 +54,17 @@ import org.openide.util.NbBundle.Messages;
  */
 public final class ChatWindowTopComponent extends TopComponent {
 
+    private JSONArray conversationHistory = new JSONArray();
+    private String systemPrompt = "You are ChatGPT integrated with NetBeans.";
+    private String currentModel = "gpt-4o";
+
     public ChatWindowTopComponent() {
         initComponents();
         setName(Bundle.CTL_ChatWindowTopComponent());
         setToolTipText(Bundle.HINT_ChatWindowTopComponent());
+
+        // Initialize conversation with a system prompt
+        conversationHistory.put(new JSONObject().put("role", "system").put("content", systemPrompt));
     }
 
     /**
@@ -71,6 +80,8 @@ public final class ChatWindowTopComponent extends TopComponent {
         jScrollPane1 = new javax.swing.JScrollPane();
         responseTextArea = new javax.swing.JTextArea();
         sendButton = new javax.swing.JButton();
+        clearButton = new javax.swing.JButton();
+        modelComboBox = new javax.swing.JComboBox<>();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -123,11 +134,42 @@ public final class ChatWindowTopComponent extends TopComponent {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridheight = 1;
         gridBagConstraints.ipadx = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         add(sendButton, gridBagConstraints);
+
+        clearButton.setBackground(new java.awt.Color(51, 51, 51));
+        clearButton.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
+        clearButton.setForeground(new java.awt.Color(0, 255, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(clearButton, org.openide.util.NbBundle.getMessage(ChatWindowTopComponent.class, "ChatWindowTopComponent.clearButton.text")); // NOI18N
+        clearButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.ipadx = 9;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        add(clearButton, gridBagConstraints);
+
+        modelComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "gpt-4o", "gpt-3.5-turbo" }));
+        modelComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                modelComboBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.ipadx = 233;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        add(modelComboBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private String readApiKeyFromFile() throws IOException {
@@ -171,20 +213,23 @@ public final class ChatWindowTopComponent extends TopComponent {
      */
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         String prompt = promptTextField.getText();
-        responseTextArea.append("You: " + prompt + "\n");
         promptTextField.setText("");
 
-        // Make the API call and update the response area
+        // Append user message to conversation history
+        conversationHistory.put(new JSONObject().put("role", "user").put("content", prompt));
+        responseTextArea.append("You: " + prompt + "\n");
+
+        // Make the API call with conversation history and update the response area
         new Thread(() -> {
             try {
-                String response = callChatGPTAPI(prompt);
-                // Assuming the response is in JSON format and contains a "choices" array
+                String response = callChatGPTAPI(conversationHistory);
                 JSONObject jsonResponse = new JSONObject(response);
                 JSONArray choices = jsonResponse.getJSONArray("choices");
                 String reply = choices.getJSONObject(0).getJSONObject("message").getString("content");
-                // Update the response text area on the EDT
+                // Append assistant message to history
+                conversationHistory.put(new JSONObject().put("role", "assistant").put("content", reply));
                 javax.swing.SwingUtilities.invokeLater(() -> {
-                    responseTextArea.append("ChatGPT 4o: " + reply + "\n");
+                    responseTextArea.append("ChatGPT: " + reply + "\n");
                 });
             } catch (Exception e) {
                 e.printStackTrace();
@@ -202,7 +247,7 @@ public final class ChatWindowTopComponent extends TopComponent {
      * @return String
      * @throws IOException 
      */
-    private String callChatGPTAPI(String prompt) throws IOException {
+    private String callChatGPTAPI(JSONArray messages) throws IOException {
         OkHttpClient client = new OkHttpClient();
 
         // API URL for chat completions
@@ -210,11 +255,7 @@ public final class ChatWindowTopComponent extends TopComponent {
         String apiKey = readApiKeyFromFile();  // Ensure this is your actual API key
 
         JSONObject json = new JSONObject();
-        json.put("model", "gpt-4o"); // Ensure you use the correct model
-
-        // Create messages array
-        JSONArray messages = new JSONArray();
-        messages.put(new JSONObject().put("role", "user").put("content", prompt));
+        json.put("model", currentModel);
         json.put("messages", messages);
 
         RequestBody body = RequestBody.create(
@@ -234,12 +275,27 @@ public final class ChatWindowTopComponent extends TopComponent {
         }
     }
 
+    private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        conversationHistory = new JSONArray();
+        conversationHistory.put(new JSONObject().put("role", "system").put("content", systemPrompt));
+        responseTextArea.setText("");
+    }
+
+    private void modelComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
+        Object selected = modelComboBox.getSelectedItem();
+        if (selected != null) {
+            currentModel = selected.toString();
+        }
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField promptTextField;
     private javax.swing.JTextArea responseTextArea;
     private javax.swing.JButton sendButton;
+    private javax.swing.JButton clearButton;
+    private javax.swing.JComboBox<String> modelComboBox;
     // End of variables declaration//GEN-END:variables
     
     /**
@@ -261,6 +317,8 @@ public final class ChatWindowTopComponent extends TopComponent {
                 promptTextField.requestFocusInWindow();
             }
         });
+
+        modelComboBox.setSelectedItem(currentModel);
         
         try {
             // Attempt to read the API key on startup to ensure it's available
@@ -283,12 +341,17 @@ public final class ChatWindowTopComponent extends TopComponent {
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles
-        p.setProperty("version", "1.0");
-        // TODO store your settings
+        p.setProperty("version", "2.0");
+        p.setProperty("model", currentModel);
     }
 
     void readProperties(java.util.Properties p) {
         String version = p.getProperty("version");
-        // TODO read your settings according to their version
+        if (version != null && version.startsWith("2")) {
+            String savedModel = p.getProperty("model");
+            if (savedModel != null) {
+                currentModel = savedModel;
+            }
+        }
     }
 }
