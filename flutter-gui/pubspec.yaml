@@ -1,0 +1,15 @@
+name: chatgpt_flutter_gui
+description: A simple Flutter GUI for interacting with OpenAI's API.
+version: 0.1.0
+environment:
+  sdk: '>=2.17.0 <3.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^0.13.0
+  path_provider: ^2.0.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+flutter:
+  uses-material-design: true
