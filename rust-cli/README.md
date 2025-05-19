@@ -1,15 +1,16 @@
 # rust-cli
 
-A simple command line tool written in Rust that interacts with the OpenAI API. The tool supports creating, listing, updating and deleting stored prompts and responses. The API key must be provided in the `OPENAI_API_KEY` environment variable.
+A command line application written in Rust that lets you chat with ChatGPT from your terminal. It follows the same workflow as the other CLI implementations and stores your conversation history locally. Ensure `OPENAI_API_KEY` is set before running.
 
 ## Usage
 
-```
-cargo run -- create "your prompt"
-cargo run -- list
-cargo run -- update <id> "new prompt"
-cargo run -- delete <id>
-```
+```bash
+# interactive conversation
+cargo run -- chat
 
-Each command updates a local `data.json` file used for storage.
+# show previous history
+cargo run -- history
 
+# clear saved history
+cargo run -- clear
+```

@@ -1,40 +1,40 @@
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs;
+use std::io::{self, Write};
 use std::path::Path;
 
 #[derive(Serialize, Deserialize, Clone)]
-struct Item {
-    id: u32,
-    prompt: String,
-    response: String,
+struct Message {
+    role: String,
+    content: String,
 }
 
-const DATA_FILE: &str = "data.json";
+const HISTORY_FILE: &str = "history.json";
 
-fn load_items() -> Result<Vec<Item>, Box<dyn std::error::Error>> {
-    if !Path::new(DATA_FILE).exists() {
+fn load_history() -> Result<Vec<Message>, Box<dyn std::error::Error>> {
+    if !Path::new(HISTORY_FILE).exists() {
         return Ok(Vec::new());
     }
-    let data = fs::read_to_string(DATA_FILE)?;
+    let data = fs::read_to_string(HISTORY_FILE)?;
     if data.trim().is_empty() {
         return Ok(Vec::new());
     }
-    let items = serde_json::from_str(&data)?;
-    Ok(items)
+    let msgs = serde_json::from_str(&data)?;
+    Ok(msgs)
 }
 
-fn save_items(items: &[Item]) -> Result<(), Box<dyn std::error::Error>> {
-    let data = serde_json::to_string_pretty(items)?;
-    fs::write(DATA_FILE, data)?;
+fn save_history(msgs: &[Message]) -> Result<(), Box<dyn std::error::Error>> {
+    let data = serde_json::to_string_pretty(msgs)?;
+    fs::write(HISTORY_FILE, data)?;
     Ok(())
 }
 
-fn call_openai(prompt: &str, api_key: &str) -> Result<String, Box<dyn std::error::Error>> {
+fn call_openai(msgs: &[Message], api_key: &str) -> Result<String, Box<dyn std::error::Error>> {
     let client = reqwest::blocking::Client::new();
     let body = serde_json::json!({
         "model": "gpt-4o",
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": msgs,
     });
     let resp = client
         .post("https://api.openai.com/v1/chat/completions")
@@ -51,10 +51,10 @@ fn call_openai(prompt: &str, api_key: &str) -> Result<String, Box<dyn std::error
     }
     #[derive(Deserialize)]
     struct Choice {
-        message: Message,
+        message: MessageInner,
     }
     #[derive(Deserialize)]
-    struct Message {
+    struct MessageInner {
         content: String,
     }
     let parsed: ChatResponse = resp.json()?;
@@ -65,96 +65,63 @@ fn call_openai(prompt: &str, api_key: &str) -> Result<String, Box<dyn std::error
         .ok_or_else(|| "no choices returned".into())
 }
 
-fn create_item(prompt: &str, items: &mut Vec<Item>, api_key: &str) -> Result<Item, Box<dyn std::error::Error>> {
-    let response = call_openai(prompt, api_key)?;
-    let id = items.last().map(|it| it.id + 1).unwrap_or(1);
-    let item = Item {
-        id,
-        prompt: prompt.to_string(),
-        response,
-    };
-    items.push(item.clone());
-    Ok(item)
-}
-
-fn update_item(id: u32, prompt: &str, items: &mut [Item], api_key: &str) -> Result<Item, Box<dyn std::error::Error>> {
-    for it in items.iter_mut() {
-        if it.id == id {
-            let response = call_openai(prompt, api_key)?;
-            it.prompt = prompt.to_string();
-            it.response = response;
-            return Ok(it.clone());
+fn chat(api_key: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let mut history = load_history()?;
+    let stdin = io::stdin();
+    let mut input = String::new();
+    println!("Enter 'exit' to quit.");
+    loop {
+        input.clear();
+        print!("> ");
+        io::stdout().flush()?;
+        if stdin.read_line(&mut input)? == 0 {
+            break;
         }
+        let text = input.trim();
+        if text == "exit" || text == "quit" {
+            break;
+        }
+        history.push(Message { role: "user".into(), content: text.into() });
+        let reply = call_openai(&history, api_key)?;
+        println!("{}", reply);
+        history.push(Message { role: "assistant".into(), content: reply });
+        save_history(&history)?;
     }
-    Err(format!("item {} not found", id).into())
+    Ok(())
 }
 
-fn delete_item(id: u32, items: &mut Vec<Item>) -> Result<(), Box<dyn std::error::Error>> {
-    if let Some(pos) = items.iter().position(|it| it.id == id) {
-        items.remove(pos);
-        Ok(())
-    } else {
-        Err(format!("item {} not found", id).into())
+fn print_history() -> Result<(), Box<dyn std::error::Error>> {
+    let history = load_history()?;
+    for m in history {
+        println!("{}: {}", m.role, m.content);
     }
+    Ok(())
+}
+
+fn clear_history() -> Result<(), Box<dyn std::error::Error>> {
+    if Path::new(HISTORY_FILE).exists() {
+        fs::remove_file(HISTORY_FILE)?;
+    }
+    Ok(())
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut args: Vec<String> = env::args().skip(1).collect();
     if args.is_empty() {
-        println!("Usage: [create|list|update|delete] [arguments]");
+        println!("Usage: [chat|history|clear]");
         return Ok(());
     }
-
     let api_key = env::var("OPENAI_API_KEY").unwrap_or_default();
     if api_key.is_empty() {
         println!("OPENAI_API_KEY not set");
         return Ok(());
     }
-
     let cmd = args.remove(0);
-    let mut items = load_items()?;
-
     match cmd.as_str() {
-        "create" => {
-            if args.is_empty() {
-                println!("Usage: create <prompt>");
-                return Ok(());
-            }
-            let prompt = &args[0];
-            let item = create_item(prompt, &mut items, &api_key)?;
-            save_items(&items)?;
-            println!("Created item {}", item.id);
-        }
-        "list" => {
-            for it in &items {
-                println!("{}: {} -> {}", it.id, it.prompt, it.response);
-            }
-        }
-        "update" => {
-            if args.len() < 2 {
-                println!("Usage: update <id> <prompt>");
-                return Ok(());
-            }
-            let id: u32 = args[0].parse().map_err(|_| "Invalid id")?;
-            let prompt = &args[1];
-            let item = update_item(id, prompt, &mut items, &api_key)?;
-            save_items(&items)?;
-            println!("Updated item {}", item.id);
-        }
-        "delete" => {
-            if args.is_empty() {
-                println!("Usage: delete <id>");
-                return Ok(());
-            }
-            let id: u32 = args[0].parse().map_err(|_| "Invalid id")?;
-            delete_item(id, &mut items)?;
-            save_items(&items)?;
-            println!("Deleted item {}", id);
-        }
-        _ => {
-            println!("Unknown command");
-        }
+        "chat" => chat(&api_key)?,
+        "history" => print_history()?,
+        "clear" => clear_history()?,
+        _ => println!("Unknown command"),
     }
-
     Ok(())
 }

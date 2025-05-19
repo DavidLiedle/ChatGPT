@@ -1,14 +1,16 @@
 # dart-cli
 
-This directory contains a Dart command line application that interacts with the OpenAI API. It mirrors the features of the Go CLI by allowing you to create, list, update, and delete stored prompts and responses.
+A Dart command line application for chatting with ChatGPT. It shares the same workflow as the other CLI tools and stores conversation history locally. Set `OPENAI_API_KEY` in your environment before running.
 
 ## Usage
 
 ```bash
-dart run bin/dart_cli.dart --create "your prompt"
-dart run bin/dart_cli.dart --list
-dart run bin/dart_cli.dart --update 1 "new prompt"
-dart run bin/dart_cli.dart --delete 1
-```
+# start an interactive session
+dart run bin/dart_cli.dart chat
 
-An API key must be provided through the `OPENAI_API_KEY` environment variable. All items are stored in a local `data.json` file.
+# view saved history
+dart run bin/dart_cli.dart history
+
+# remove saved history
+dart run bin/dart_cli.dart clear
+```
