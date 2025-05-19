@@ -103,6 +103,7 @@ class _ChatPageState extends State<ChatPage> {
       final item = Item(id: id, prompt: prompt, response: responseText);
       setState(() => _items.add(item));
       await _saveItems();
+      _promptController.clear();
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Error: $e')));
@@ -157,6 +158,11 @@ class _ChatPageState extends State<ChatPage> {
             TextField(
               controller: _promptController,
               decoration: const InputDecoration(labelText: 'Prompt'),
+              onSubmitted: (value) {
+                if (!_loading) {
+                  _createItem(value);
+                }
+              },
             ),
             const SizedBox(height: 8),
             ElevatedButton(
