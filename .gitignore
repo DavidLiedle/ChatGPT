@@ -24,3 +24,12 @@ hs_err_pid*
 replay_pid*
 # Rust build output
 rust-cli/target/
+# Build artifacts
+NetBeans/nbbuild/
+NetBeans/build/
+NetBeans/target/
+flutter-gui/build/
+flutter-gui/.dart_tool/
+dart-cli/.dart_tool/
+# CLI history files
+*/history.json
