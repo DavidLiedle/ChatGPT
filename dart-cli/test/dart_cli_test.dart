@@ -4,27 +4,32 @@ import '../bin/dart_cli.dart';
 
 void main() {
   group('storage', () {
-    test('save and load', () async {
-      var dir = Directory.systemTemp.createTempSync();
-      var prev = Directory.current;
+    test('save and load history', () async {
+      final dir = Directory.systemTemp.createTempSync();
+      final prev = Directory.current;
       Directory.current = dir;
-      var items = [Item(id: 1, prompt: 'p', response: 'r')];
-      await saveItems(items);
-      var loaded = await loadItems();
+
+      final msgs = [Message(role: 'user', content: 'hello')];
+      await saveHistory(msgs);
+      final loaded = await loadHistory();
       expect(loaded.length, 1);
-      expect(loaded.first.prompt, 'p');
+      expect(loaded.first.role, 'user');
+      expect(loaded.first.content, 'hello');
+
       Directory.current = prev;
     });
 
-    test('delete item', () {
-      var items = [
-        Item(id: 1, prompt: 'a', response: 'b'),
-        Item(id: 2, prompt: 'c', response: 'd')
-      ];
-      deleteItem(1, items);
-      expect(items.length, 1);
-      expect(items.first.id, 2);
-      expect(() => deleteItem(3, items), throwsException);
+    test('clear history', () async {
+      final dir = Directory.systemTemp.createTempSync();
+      final prev = Directory.current;
+      Directory.current = dir;
+
+      final msgs = [Message(role: 'user', content: 'bye')];
+      await saveHistory(msgs);
+      await clearHistory();
+      expect(File(historyFile).existsSync(), isFalse);
+
+      Directory.current = prev;
     });
   });
 }
