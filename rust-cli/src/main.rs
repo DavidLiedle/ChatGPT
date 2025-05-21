@@ -132,29 +132,30 @@ mod tests {
     use std::env;
 
     #[test]
-    fn test_save_and_load() {
+    fn save_and_load_history() {
         let dir = tempfile::tempdir().unwrap();
         let prev = env::current_dir().unwrap();
         env::set_current_dir(&dir).unwrap();
 
-        let items = vec![Item { id: 1, prompt: "p".into(), response: "r".into() }];
-        save_items(&items).unwrap();
-        let loaded = load_items().unwrap();
-        assert_eq!(loaded.len(), 1);
-        assert_eq!(loaded[0].prompt, "p");
+        let msgs = vec![Message { role: "user".into(), content: "hi".into() }];
+        save_history(&msgs).unwrap();
+        let loaded = load_history().unwrap();
+        assert_eq!(msgs, loaded);
 
         env::set_current_dir(prev).unwrap();
     }
 
     #[test]
-    fn test_delete_item() {
-        let mut items = vec![
-            Item { id: 1, prompt: "a".into(), response: "b".into() },
-            Item { id: 2, prompt: "c".into(), response: "d".into() },
-        ];
-        delete_item(1, &mut items).unwrap();
-        assert_eq!(items.len(), 1);
-        assert_eq!(items[0].id, 2);
-        assert!(delete_item(3, &mut items).is_err());
+    fn clear_history() {
+        let dir = tempfile::tempdir().unwrap();
+        let prev = env::current_dir().unwrap();
+        env::set_current_dir(&dir).unwrap();
+
+        let msgs = vec![Message { role: "user".into(), content: "bye".into() }];
+        save_history(&msgs).unwrap();
+        clear_history().unwrap();
+        assert!(!std::path::Path::new(HISTORY_FILE).exists());
+
+        env::set_current_dir(prev).unwrap();
     }
 }
