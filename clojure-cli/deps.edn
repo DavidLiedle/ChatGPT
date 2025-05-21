@@ -1,0 +1,7 @@
+{:paths ["src" "test"]
+ :deps {org.clojure/clojure {:mvn/version "1.11.1"}
+        clj-http {:mvn/version "3.12.3"}
+        cheshire {:mvn/version "5.11.0"}}
+ :aliases {:test {:extra-paths ["test"]
+                  :exec-fn clojure.test/run-tests
+                  :exec-args {:dirs ["test"]}}}}
