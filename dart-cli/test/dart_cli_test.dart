@@ -17,6 +17,15 @@ void main() {
     });
 
     test('clear history', () async {
+
+      final dir = Directory.systemTemp.createTempSync();
+      final prev = Directory.current;
+      Directory.current = dir;
+
+      final msgs = [Message(role: 'user', content: 'bye')];
+      await saveHistory(msgs);
+      await clearHistory();
+      expect(File(historyFile).existsSync(), isFalse);
       var dir = Directory.systemTemp.createTempSync();
       var prev = Directory.current;
       Directory.current = dir;
