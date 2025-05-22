@@ -131,8 +131,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 mod tests {
     use super::*;
     use std::env;
+    use serial_test::serial;
 
     #[test]
+    #[serial]
     fn save_and_load_history() {
         let dir = tempfile::tempdir().unwrap();
         let prev = env::current_dir().unwrap();
@@ -147,6 +149,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn clear_history() -> Result<(), Box<dyn std::error::Error>> {
         let dir = tempfile::tempdir().unwrap();
         let prev = env::current_dir().unwrap();
@@ -162,6 +165,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn load_history_missing_and_empty() {
         let dir = tempfile::tempdir().unwrap();
         let prev = env::current_dir().unwrap();
