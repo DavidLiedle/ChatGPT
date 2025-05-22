@@ -4,7 +4,7 @@ use std::fs;
 use std::io::{self, Write};
 use std::path::Path;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 struct Message {
     role: String,
     content: String,
@@ -42,8 +42,9 @@ fn call_openai(msgs: &[Message], api_key: &str) -> Result<String, Box<dyn std::e
         .json(&body)
         .send()?;
     if !resp.status().is_success() {
+        let status = resp.status();
         let text = resp.text().unwrap_or_default();
-        return Err(format!("API error: {}", text).into());
+        return Err(format!("API error (status {}): {}", status, text).into());
     }
     #[derive(Deserialize)]
     struct ChatResponse {
@@ -153,7 +154,7 @@ mod tests {
 
         let msgs = vec![Message { role: "user".into(), content: "bye".into() }];
         save_history(&msgs).unwrap();
-        clear_history().unwrap();
+        clear_history().expect("Failed to clear history");
         assert!(!std::path::Path::new(HISTORY_FILE).exists());
 
         env::set_current_dir(prev).unwrap();

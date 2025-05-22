@@ -9,3 +9,14 @@ This repository contains multiple implementations that interact with the OpenAI 
 - `rust-cli/` – A command line interface written in Rust.
 
 All CLI implementations share the same workflow: start an interactive `chat` session, inspect `history`, or `clear` the stored conversation. Each subfolder may provide additional documentation.
+
+## Testing
+
+Each subproject provides unit tests where possible:
+
+- **go-cli**: run `go test ./...`
+- **rust-cli**: run `cargo test`
+- **dart-cli** and **flutter-gui**: run `dart test` or `flutter test`
+- **NetBeans**: run `mvn test`
+
+Some environments may need additional SDKs or build tools installed before tests can run.
