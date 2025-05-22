@@ -23,3 +23,16 @@
       (is (not (.exists (io/file core/history-file))))
       (finally
         (System/setProperty "user.dir" prev)))))
+
+(deftest load-history-missing-and-empty
+  (let [dir (java.nio.file.Files/createTempDirectory "hist3" (make-array java.nio.file.attribute.FileAttribute 0))
+        prev (System/getProperty "user.dir")]
+    (System/setProperty "user.dir" (.toString dir))
+    (try
+      ;; missing file
+      (is (= [] (core/load-history)))
+      ;; empty file
+      (spit core/history-file "")
+      (is (= [] (core/load-history)))
+      (finally
+        (System/setProperty "user.dir" prev)))))
