@@ -154,7 +154,7 @@ mod tests {
 
         let msgs = vec![Message { role: "user".into(), content: "bye".into() }];
         save_history(&msgs).unwrap();
-        clear_history().expect("Failed to clear history");
+        clear_history().unwrap();
         assert!(!std::path::Path::new(HISTORY_FILE).exists());
 
         env::set_current_dir(prev).unwrap();
