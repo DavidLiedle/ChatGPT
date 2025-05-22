@@ -154,8 +154,26 @@ mod tests {
 
         let msgs = vec![Message { role: "user".into(), content: "bye".into() }];
         save_history(&msgs).unwrap();
-        clear_history().expect("Failed to clear history");
+        clear_history().unwrap();
         assert!(!std::path::Path::new(HISTORY_FILE).exists());
+
+        env::set_current_dir(prev).unwrap();
+    }
+
+    #[test]
+    fn load_history_missing_and_empty() {
+        let dir = tempfile::tempdir().unwrap();
+        let prev = env::current_dir().unwrap();
+        env::set_current_dir(&dir).unwrap();
+
+        // missing file
+        let msgs = load_history().unwrap();
+        assert!(msgs.is_empty());
+
+        // empty file
+        std::fs::write(HISTORY_FILE, "").unwrap();
+        let msgs = load_history().unwrap();
+        assert!(msgs.is_empty());
 
         env::set_current_dir(prev).unwrap();
     }
