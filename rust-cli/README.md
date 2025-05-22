@@ -1,6 +1,8 @@
 # rust-cli
 
-A command line application written in Rust that lets you chat with ChatGPT from your terminal. It follows the same workflow as the other CLI implementations and stores your conversation history locally. Ensure `OPENAI_API_KEY` is set before running.
+A tiny Rust command line example that chats with the OpenAI API using `curl`.
+The implementation avoids external crates so it builds offline. History is stored
+in `history.txt` in the current directory.
 
 ## Usage
 

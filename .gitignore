@@ -33,3 +33,4 @@ flutter-gui/.dart_tool/
 dart-cli/.dart_tool/
 # CLI history files
 */history.json
+rust-cli/Cargo.lock
