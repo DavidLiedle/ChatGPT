@@ -147,17 +147,18 @@ mod tests {
     }
 
     #[test]
-    fn clear_history() {
+    fn clear_history() -> Result<(), Box<dyn std::error::Error>> {
         let dir = tempfile::tempdir().unwrap();
         let prev = env::current_dir().unwrap();
         env::set_current_dir(&dir).unwrap();
 
         let msgs = vec![Message { role: "user".into(), content: "bye".into() }];
         save_history(&msgs).unwrap();
-        clear_history().unwrap();
+        clear_history()?;
         assert!(!std::path::Path::new(HISTORY_FILE).exists());
 
         env::set_current_dir(prev).unwrap();
+        Ok(())
     }
 
     #[test]
