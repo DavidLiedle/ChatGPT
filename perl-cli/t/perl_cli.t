@@ -22,6 +22,15 @@ is_deeply($loaded, [{ role => 'user', content => 'hi' }], 'save and load history
 clear_history();
 ok(!-e $main::history_file, 'history file removed');
 
+# load history when file missing and empty
+my $msgs = load_history();
+is_deeply($msgs, [], 'load_history with missing file returns empty');
+
+open my $fh, '>', $main::history_file or die $!;
+close $fh;
+$msgs = load_history();
+is_deeply($msgs, [], 'load_history with empty file returns empty');
+
 chdir $prev or die $!;
 
 done_testing();
