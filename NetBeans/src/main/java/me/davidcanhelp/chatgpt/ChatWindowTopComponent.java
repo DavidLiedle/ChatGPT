@@ -180,9 +180,6 @@ public final class ChatWindowTopComponent extends TopComponent {
         Path path = Paths.get(userHome, configDir, apiKeyFile);
         File file = path.toFile();
 
-        // Debugging: Print the file path
-        System.out.println("Reading API key from: " + file.getAbsolutePath());
-
         // Check if the file exists and is readable
         if (!file.exists()) {
             throw new IOException("API key file not found: " + file.getAbsolutePath());
@@ -201,7 +198,6 @@ public final class ChatWindowTopComponent extends TopComponent {
         }
 
         String apiKeyString = apiKey.toString().trim();
-        System.out.println("API key read successfully: " + apiKeyString);
         return apiKeyString;
     }
 

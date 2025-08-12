@@ -8,6 +8,7 @@ This repository contains multiple implementations that interact with the OpenAI 
 - `dart-cli/` – A command line interface written in Dart.
 - `rust-cli/` – A command line interface written in Rust.
 - `perl-cli/` – A command line interface written in Perl.
+- `clojure-cli/` – A command line interface written in Clojure.
 
 All CLI implementations share the same workflow: start an interactive `chat` session, inspect `history`, or `clear` the stored conversation. Each subfolder may provide additional documentation.
 
@@ -20,5 +21,6 @@ Each subproject provides unit tests where possible:
 - **dart-cli** and **flutter-gui**: run `dart test` or `flutter test`
 - **NetBeans**: run `mvn test`
 - **perl-cli**: run `prove -I . t`
+- **clojure-cli**: run `clojure -X:test`
 
 Some environments may need additional SDKs or build tools installed before tests can run.

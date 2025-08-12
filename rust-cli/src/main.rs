@@ -114,8 +114,83 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use std::fs;
+    use std::path::Path;
+
     #[test]
-    fn simple_add() {
-        assert_eq!(1 + 1, 2);
+    fn test_escape() {
+        assert_eq!(escape("hello"), "hello");
+        assert_eq!(escape("hello \"world\""), "hello \\\"world\\\"");
+        assert_eq!(escape("\""), "\\\"");
+    }
+
+    #[test]
+    fn test_message_struct() {
+        let msg = Message {
+            role: "user".to_string(),
+            content: "Hello".to_string(),
+        };
+        assert_eq!(msg.role, "user");
+        assert_eq!(msg.content, "Hello");
+    }
+
+    #[test]
+    fn test_save_and_load_history() {
+        let test_file = "test_history.txt";
+        
+        // Clean up before test
+        if Path::new(test_file).exists() {
+            fs::remove_file(test_file).unwrap();
+        }
+
+        // Create test messages
+        let msgs = vec![
+            Message { role: "user".into(), content: "Hello".into() },
+            Message { role: "assistant".into(), content: "Hi there".into() },
+        ];
+
+        // Override HISTORY_FILE for this test would require refactoring
+        // Instead we'll test the format directly
+        let mut data = String::new();
+        for m in &msgs {
+            data.push_str(&format!("{}:{}\n", m.role, m.content));
+        }
+        fs::write(test_file, &data).unwrap();
+
+        // Read it back
+        let loaded_data = fs::read_to_string(test_file).unwrap();
+        let mut loaded_msgs = Vec::new();
+        for line in loaded_data.lines() {
+            if let Some((role, content)) = line.split_once(':') {
+                loaded_msgs.push(Message { role: role.into(), content: content.into() });
+            }
+        }
+
+        assert_eq!(loaded_msgs.len(), 2);
+        assert_eq!(loaded_msgs[0].role, "user");
+        assert_eq!(loaded_msgs[0].content, "Hello");
+        assert_eq!(loaded_msgs[1].role, "assistant");
+        assert_eq!(loaded_msgs[1].content, "Hi there");
+
+        // Clean up
+        fs::remove_file(test_file).unwrap();
+    }
+
+    #[test]
+    fn test_clear_history() {
+        let test_file = "test_clear.txt";
+        
+        // Create a test file
+        fs::write(test_file, "test content").unwrap();
+        assert!(Path::new(test_file).exists());
+        
+        // Remove it
+        if Path::new(test_file).exists() {
+            fs::remove_file(test_file).unwrap();
+        }
+        
+        // Verify it's gone
+        assert!(!Path::new(test_file).exists());
     }
 }

@@ -66,3 +66,27 @@ jobs:
           distribution: temurin
           java-version: '17'
       - run: mvn -B test
+
+  clojure:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clojure-cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeLaGuardo/setup-clojure@12.5
+        with:
+          cli: latest
+      - run: clojure -X:test
+
+  perl:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: perl-cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: '5.38'
+      - run: prove -I . t
