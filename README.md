@@ -12,6 +12,14 @@ This repository contains multiple implementations that interact with the OpenAI 
 
 All CLI implementations share the same workflow: start an interactive `chat` session, inspect `history`, or `clear` the stored conversation. Each subfolder may provide additional documentation.
 
+## Requirements
+
+All implementations require the `OPENAI_API_KEY` environment variable to be set with a valid OpenAI API key.
+
+### Platform-Specific Requirements
+
+- **perl-cli**: Requires `Net::SSLeay` module for HTTPS support. Install with `cpan -T Net::SSLeay` if not already present.
+
 ## Testing
 
 Each subproject provides unit tests where possible:
