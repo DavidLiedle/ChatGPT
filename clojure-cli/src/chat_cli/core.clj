@@ -28,7 +28,7 @@
                          :as :json})]
     (if (= 200 (:status resp))
       (-> resp :body :choices first :message :content)
-      (throw (ex-info "API error" {:status (:status resp) :body (:body resp)}))))
+      (throw (ex-info "API error" {:status (:status resp) :body (:body resp)})))))
 
 (defn chat [api-key]
   (let [history (atom (load-history))]
