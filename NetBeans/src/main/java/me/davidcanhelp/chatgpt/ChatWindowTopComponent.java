@@ -56,7 +56,7 @@ public final class ChatWindowTopComponent extends TopComponent {
 
     private JSONArray conversationHistory = new JSONArray();
     private String systemPrompt = "You are ChatGPT integrated with NetBeans.";
-    private String currentModel = "gpt-4o";
+    private String currentModel = "gpt-5.2";
 
     public ChatWindowTopComponent() {
         initComponents();

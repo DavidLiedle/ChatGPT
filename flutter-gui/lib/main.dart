@@ -115,7 +115,7 @@ class _ChatPageState extends State<ChatPage> {
   Future<String> _callOpenAI(String prompt, String apiKey) async {
     final uri = Uri.parse('https://api.openai.com/v1/chat/completions');
     final body = json.encode({
-      'model': 'gpt-4o',
+      'model': 'gpt-5.2',
       'messages': [
         {'role': 'user', 'content': prompt}
       ]

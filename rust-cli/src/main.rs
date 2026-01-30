@@ -42,7 +42,7 @@ fn call_openai(msgs: &[Message], api_key: &str) -> Result<String, Box<dyn std::e
         .map(|m| format!("{{\"role\":\"{}\",\"content\":\"{}\"}}", m.role, escape(&m.content)))
         .collect::<Vec<_>>()
         .join(",");
-    let body = format!("{{\"model\":\"gpt-4o\",\"messages\":[{}]}}", messages_json);
+    let body = format!("{{\"model\":\"gpt-5.2\",\"messages\":[{}]}}", messages_json);
     let cmd = format!(
         "curl -s -H 'Authorization: Bearer {api_key}' -H 'Content-Type: application/json' -d '{body}' https://api.openai.com/v1/chat/completions | jq -r '.choices[0].message.content'"
     );

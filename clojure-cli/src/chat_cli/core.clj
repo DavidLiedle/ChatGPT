@@ -23,7 +23,7 @@
   (let [resp (http/post "https://api.openai.com/v1/chat/completions"
                         {:headers {"Authorization" (str "Bearer " api-key)
                                    "Content-Type" "application/json"}
-                         :body (json/generate-string {:model "gpt-4o"
+                         :body (json/generate-string {:model "gpt-5.2"
                                                       :messages msgs})
                          :as :json})]
     (if (= 200 (:status resp))

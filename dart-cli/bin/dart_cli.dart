@@ -31,7 +31,7 @@ Future<void> saveHistory(List<Message> messages) async {
 }
 
 Future<String> callOpenAI(List<Message> messages, String apiKey) async {
-  final body = json.encode({'model': 'gpt-4o', 'messages': messages});
+  final body = json.encode({'model': 'gpt-5.2', 'messages': messages});
   final response = await http.post(
     Uri.parse('https://api.openai.com/v1/chat/completions'),
     headers: {

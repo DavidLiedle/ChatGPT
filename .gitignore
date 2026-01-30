@@ -40,3 +40,9 @@ rust-cli/Cargo.lock
 
 # Rust CLI history (text format)
 rust-cli/history.txt
+
+# Go CLI binary
+go-cli/chatgpt-cli
+
+# Flutter generated files
+flutter-gui/.flutter-plugins-dependencies

@@ -5,7 +5,7 @@ import (
     "encoding/json"
     "errors"
     "fmt"
-    "io/ioutil"
+    "io"
     "net/http"
     "os"
     "strings"
@@ -22,7 +22,7 @@ func loadHistory() ([]Message, error) {
     if _, err := os.Stat(historyFile); errors.Is(err, os.ErrNotExist) {
         return []Message{}, nil
     }
-    b, err := ioutil.ReadFile(historyFile)
+    b, err := os.ReadFile(historyFile)
     if err != nil {
         return nil, err
     }
@@ -41,12 +41,12 @@ func saveHistory(msgs []Message) error {
     if err != nil {
         return err
     }
-    return ioutil.WriteFile(historyFile, b, 0644)
+    return os.WriteFile(historyFile, b, 0644)
 }
 
 func callOpenAI(msgs []Message, apiKey string) (string, error) {
     body, err := json.Marshal(map[string]interface{}{
-        "model":    "gpt-4o",
+        "model":    "gpt-5.2",
         "messages": msgs,
     })
     if err != nil {
@@ -65,7 +65,7 @@ func callOpenAI(msgs []Message, apiKey string) (string, error) {
     }
     defer resp.Body.Close()
     if resp.StatusCode != http.StatusOK {
-        b, _ := ioutil.ReadAll(resp.Body)
+        b, _ := io.ReadAll(resp.Body)
         return "", fmt.Errorf("API error: %s", string(b))
     }
     var parsed struct {

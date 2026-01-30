@@ -27,7 +27,7 @@ sub save_history {
 sub call_openai {
     my ($msgs, $api_key) = @_;
     my $ua = HTTP::Tiny->new();
-    my $body = JSON::PP->new->encode({ model => 'gpt-4o', messages => $msgs });
+    my $body = JSON::PP->new->encode({ model => 'gpt-5.2', messages => $msgs });
     my $resp = $ua->post(
         'https://api.openai.com/v1/chat/completions',
         {
