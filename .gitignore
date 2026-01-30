@@ -34,3 +34,9 @@ dart-cli/.dart_tool/
 # CLI history files
 */history.json
 rust-cli/Cargo.lock
+
+# Clojure classpath cache
+**/.cpcache/
+
+# Rust CLI history (text format)
+rust-cli/history.txt
